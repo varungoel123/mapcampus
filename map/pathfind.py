@@ -1,20 +1,73 @@
-from abc import ABCMeta, abstractmethod  
-from mapcampus.db.models import Point 
-  
-class PathFinder:  
-    __metaclass__ = ABCMeta  
- 
-    @abstractmethod  
-    def find_path(start, goal):
-        pass
+import heapq
+from mapcampus.db.models import Node, Edge
 
-    @abstractmethod
-    def find_path(*args, **kwargs):
-        pass
+class PathCostCalculator:
+    def get_cost(self, start, end):
+        return start.coordinates.distance(end.coordinates)
 
-class AStar(PathFinder):
-    def find_path(start, goal):
-        return 1
+class HeuristicCostCalculator:
+    def get_heuristic_cost(self, node, goal):
+        return node.coordinates.distance(goal.coordinates)
 
-    def find_path(*args, **kwargs):
-        return 1
+class AStar:
+    def __init__(self, path_calc, heuristic_calc):
+        self.path_calc = path_calc
+        self.heuristic_calc = heuristic_calc
+
+    def find_path(self, start, goal):
+        path_score = {start: 0}
+        heuristic_score = {start: self.heuristic_calc.get_heuristic_cost(start, goal)}
+        full_score = {start: path_score[start] + heuristic_score[start]}
+
+        open_set = set()
+        closed_set = set()
+        parents = {}
+
+        open_set.add(start)
+        open_heap = [(full_score[start], start)]
+
+        while open_set:
+            entry = heapq.heappop(open_heap)            
+            node = entry[1]
+
+            if node == goal:
+                return self.reconstruct_path(parents, start, goal)
+            elif entry[0] != full_score[node]:
+                continue
+            
+            open_set.remove(node)
+            closed_set.add(node)
+            
+            for edge in Edge.objects.filter(node_a=node):
+                adj = edge.node_b
+        
+                if adj in closed_set:
+                    continue
+
+                pos_path_score = path_score[node] + self.path_calc.get_cost(node, adj)
+                is_better = False
+
+                if adj not in open_set:
+                    open_set.add(adj)
+                    heuristic_score[adj] = self.heuristic_calc.get_heuristic_cost(adj, goal)
+                    is_better = True
+                else:
+                    is_better = pos_path_score < path_score[adj]
+
+                if is_better:
+                    parents[adj] = node
+                    path_score[adj] = pos_path_score
+                    full_score[adj] = path_score[adj] + heuristic_score[adj]
+                    heapq.heappush(open_heap, (full_score[adj], adj))
+
+        return []
+
+    def reconstruct_path(self, parents, start, goal):
+        path = []
+        node = goal
+        while node != start:
+            parent = parents[node]
+            path.insert(0, Edge(node_a=parent, node_b=node))
+            node = parent
+        return path
+

@@ -1,0 +1,14 @@
+1. Install Django
+    - Set PYTHONPATH and DJANGO_SETTINGS_MODULE.
+    - Remember to actually change settings.py.
+
+2. Install PostgreSQL
+    - Remember to initialize the db cluster and set the  PGDATA environment
+      variable for first time users.
+
+3. Install PostGIS
+    - MUST do a psql -f on postgis.sql and spatial_ref_sys.sql.
+    - Make sure you create a template_postgis database for testing.
+
+4. Install GeoDjango
+    - Django weirdness with PostGIS. Use https://code.djangoproject.com/ticket/16778.

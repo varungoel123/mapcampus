@@ -1,47 +1,35 @@
-from django.db import models
+from django.contrib.gis.db import models
 from django.contrib import admin
 
-# Credit goes to user185534 at stackoverflow.com
-class EnumField(models.Field):
-    def __init__(self, values):
-        self.values = values
-        super(EnumField, self).__init__(
-            choices=[(v, v) for v in self.values],
-            default=self.values[0]
-        )
-
-    def db_type(self):
-        return 'enum({0})'.format( ','.join("'%s'" % v for v in self.values))
-
-class Point(models.Model):
-    _POINT_STATUSES = ['a', 'b']
-    _POINT_TYPES = ['a', 'b']
+class Node(models.Model):
+    _NODE_STATUS_CHOICES = (('A', 'A'), ('B', 'B'))
+    _NODE_TYPE_CHOICES = (('A', 'A'), ('B', 'B'))
 
     name = models.CharField(max_length=50)
-    status = EnumField(_POINT_STATUSES)
-    type = EnumField(_POINT_TYPES)
-    lat = models.IntegerField(default=0)
-    lng = models.IntegerField(default=0)
+    status = models.CharField(max_length=1, choices=_NODE_STATUS_CHOICES)
+    type = models.CharField(max_length=1, choices=_NODE_TYPE_CHOICES)
+    coordinates = models.PointField(null=True)
+    objects = models.GeoManager()
 
-class PointAdmin(admin.ModelAdmin):
-    list_display = ['name', 'status', 'type', 'lat', 'lng']
+class Edge(models.Model):
+    _EDGE_STATUS_CHOICES = (('A', 'A'), ('B', 'B'))
+    _EDGE_TYPE_CHOICES = (('A', 'A'), ('B', 'B'))
+
+    name = models.CharField(max_length=50)
+    status = models.CharField(max_length=1, choices=_EDGE_STATUS_CHOICES)
+    type = models.CharField(max_length=1, choices=_EDGE_TYPE_CHOICES)
+    node_a = models.ForeignKey(Node, related_name='edge_node_a')
+    node_b = models.ForeignKey(Node, related_name='edge_node_b')
+    objects = models.GeoManager()
+
+class NodeAdmin(admin.ModelAdmin):
+    list_display = ['name', 'status', 'type', 'coordinates']
     search_fields = ['name']
 
-class Line(models.Model):
-    _LINE_STATUSES = ['a', 'b']
-    _LINE_TYPES = ['a', 'b']
-
-    name = models.CharField(max_length=50)
-    status = EnumField(_LINE_STATUSES)
-    type = EnumField(_LINE_TYPES)
-    point_a = models.ForeignKey(Point)
-    point_b = models.ForeignKey(Point)
-
-class LineAdmin(admin.ModelAdmin):
-    list_display = ['name', 'status', 'type', 'point_a', 'point_b']
+class EdgeAdmin(admin.ModelAdmin):
+    list_display = ['name', 'status', 'type', 'node_a', 'node_b']
     search_fields = ['name']
 
 
-admin.site.register(Point, PointAdmin)
-admin.site.register(Line, LineAdmin)
-
+#admin.site.register(Node, NodeAdmin)
+#admin.site.register(Edge, EdgeAdmin)
