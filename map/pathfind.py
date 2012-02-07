@@ -1,5 +1,5 @@
 import heapq
-from mapcampus.db.models import Node, Edge
+from models import Node, Edge
 
 class PathCostCalculator:
     def get_cost(self, start, end):
@@ -38,9 +38,8 @@ class AStar:
             open_set.remove(node)
             closed_set.add(node)
             
-            for edge in Edge.objects.filter(node_a=node):
-                adj = edge.node_b
-        
+            for edge in Edge.objects.filter(node_src=node):
+                adj = edge.node_sink
                 if adj in closed_set:
                     continue
 
@@ -57,17 +56,15 @@ class AStar:
                 if is_better:
                     parents[adj] = node
                     path_score[adj] = pos_path_score
-                    full_score[adj] = path_score[adj] + heuristic_score[adj]
+                    full_score[adj] = pos_path_score + heuristic_score[adj]
                     heapq.heappush(open_heap, (full_score[adj], adj))
-
         return []
 
     def reconstruct_path(self, parents, start, goal):
-        path = []
+        path = [goal]
         node = goal
         while node != start:
-            parent = parents[node]
-            path.insert(0, Edge(node_a=parent, node_b=node))
-            node = parent
+            node = parents[node]
+            path.insert(0, node)
         return path
 
