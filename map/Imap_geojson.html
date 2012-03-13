@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
+    <style type="text/css">
+      html { height: 100% }
+      body { height: 100%; margin: 0; padding: 0 }
+      #map_canvas { height: 100% }
+    </style>
+    <script  src="http://maps.googleapis.com/maps/api/js?key=AIzaSyAJPrYJfcFe5E2e6M09dGM4pWeKqbc7-Uo&sensor=false">
+
+
+       type="text/javascript"></script>
+    <script type="text/javascript">
+    
+    var map;
+    var polyline;
+    var geojson = {
+  "type": "LineString",
+  "coordinates": [
+       [40.109385,-88.226042],
+
+							[40.108425,-88.228253],
+
+							[40.107597,-88.228199],
+
+							[40.108483,-88.226096]
+    ]
+};
+
+
+
+
+var path = [];
+for (var i = 0; i < geojson.coordinates.length; i++){
+var coord = geojson.coordinates[i];
+var ll = new google.maps.LatLng(coord[0], coord[1]);
+
+path.push(ll);
+}
+//document.write(path);
+polyline = new google.maps.Polyline({
+    path: path,
+    strokeColor: "#FF0000",
+    strokeOpacity: 1.0,
+    strokeWeight: 2
+  });
+
+
+			
+
+
+
+
+
+
+
+    
+    
+      function initialize() {
+        var myOptions = {
+          center: new google.maps.LatLng(40.10781,-88.226075),
+          zoom: 16,
+          mapTypeId: google.maps.MapTypeId.ROADMAP
+        };
+        var map = new google.maps.Map(document.getElementById("map_canvas"),
+            myOptions);
+            polyline.setMap(map);
+            
+      }
+    </script>
+  </head>
+  <body onload="initialize()">
+    <div id="map_canvas" style="width:100%; height:100%"></div>
+  </body>
+</html>
+	
+
