@@ -7,7 +7,7 @@
       variable for first time users.
 
 3. Install PostGIS
-    - MUST do a psql -f on postgis.sql and spatial_ref_sys.sql.
+    -you  MUST do a psql -f on postgis.sql and spatial_ref_sys.sql.
     - Make sure you create a template_postgis database for testing.
 
 4. Install GeoDjango
